@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Adventure Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+        
+        #login-screen {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        #login-screen.hidden {
+            display: none;
+        }
+        
+        #login-screen h1 {
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        #login-screen input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        #login-screen button {
+            width: 100%;
+            padding: 12px;
+            background: #fff;
+            color: #667eea;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        
+        #login-screen button:hover {
+            background: #f0f0f0;
+            transform: scale(1.05);
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #game-container.hidden {
+            display: none;
+        }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #ui h2 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        #ui p {
+            margin-bottom: 5px;
+        }
+        
+        #players-list {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 100;
+            max-width: 250px;
+        }
+        
+        #players-list h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        .player-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .player-item:last-child {
+            border-bottom: none;
+        }
+        
+        #controls {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 100;
+        }
+        
+        #controls h3 {
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+        
+        #controls p {
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <h1>🎮 Adventure Quest</h1>
+        <input type="text" id="playerName" placeholder="Enter your name" value="Player">
+        <button onclick="joinGame()">Start Game</button>
+    </div>
+
+    <div id="game-container" class="hidden">
+        <div id="ui">
+            <h2>⚔️ Stats</h2>
+            <p>Name: <span id="playerNameDisplay">-</span></p>
+            <p>Health: <span id="playerHealth">100</span>/100</p>
+            <p>Position: (<span id="playerX">0</span>, <span id="playerY">0</span>)</p>
+        </div>
+
+        <div id="players-list">
+            <h3>👥 Players Online</h3>
+            <div id="playersList"></div>
+        </div>
+
+        <div id="controls">
+            <h3>⌨️ Controls</h3>
+            <p>↑↓←→ Arrow Keys: Move</p>
+            <p>SPACE: Attack</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
