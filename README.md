@@ -98,16 +98,30 @@ Make sure you have `nodemon` installed (included in dev dependencies).
 
 ## Roadmap 🗺️
 
-- [ ] Enemy AI and spawning
-- [ ] Item collection and inventory system
-- [ ] Quest system
-- [ ] Chat/messaging between players
-- [ ] Skill trees and progression
-- [ ] Dungeon/level system
-- [ ] Sound effects and music
+- [x] Enemy AI and spawning
+- [x] Item collection and inventory system
+- [x] Quest system (Level 5 Portal Goal)
+- [x] Chat/messaging between players
+- [x] Special Abilities (Dash, Blast)
+- [x] Day/Night Cycle
+- [x] Minimap & Discovery
+- [x] Sound Effects (Web Audio)
+- [ ] Dungeon/level system (Expansion)
 - [ ] Mobile touch controls
 - [ ] Database integration for persistence
 - [ ] Authentication and accounts
+
+## Controls
+
+| Key | Action |
+|-----|--------|
+| WASD / Arrows | Move character |
+| SPACE | Radial Attack |
+| Q | Special: Dash (20 Mana) |
+| E | Ultimate: AoE Blast (40 Mana) |
+| 1 - 5 | Use Inventory Items |
+| ENTER | Send Chat Message |
+
 
 ## Contributing
 

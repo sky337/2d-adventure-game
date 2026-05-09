@@ -27,11 +27,27 @@ const gameState = {
   items: [],
   chests: [],
   particles: [],
+  obstacles: [],
+  portal: { x: 1800, y: 1300, active: false },
+  gameTime: 0, // 0 to 2400
   nextEnemyId: 0,
   nextItemId: 0,
   nextChestId: 0,
   nextParticleId: 0
 };
+
+
+// Initialize obstacles
+for (let i = 0; i < 40; i++) {
+  gameState.obstacles.push({
+    id: i,
+    x: Math.random() * WORLD_WIDTH,
+    y: Math.random() * WORLD_HEIGHT,
+    type: Math.random() > 0.5 ? 'tree' : 'rock',
+    scale: 0.5 + Math.random() * 0.5
+  });
+}
+
 
 // Enemy types with different properties
 const ENEMY_TYPES = {
@@ -219,6 +235,50 @@ io.on('connection', (socket) => {
     player.inventory.splice(data.index, 1);
     socket.emit('inventoryUpdated', player.inventory);
   });
+  
+  socket.on('specialAbility', (data) => {
+    if (!gameState.players[socket.id]) return;
+    const player = gameState.players[socket.id];
+    
+    if (data.type === 'dash' && player.mana >= 20) {
+      player.mana -= 20;
+      // Actual dash is handled by client position but server needs to sync mana
+      io.to(socket.id).emit('playerStatsUpdated', { mana: player.mana });
+    } else if (data.type === 'blast' && player.mana >= 40) {
+      player.mana -= 40;
+      // AoE Damage
+      gameState.enemies = gameState.enemies.filter(enemy => {
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          enemy.health -= 30;
+          createParticle(enemy.x, enemy.y, `-30!`, '#ffaa00');
+          if (enemy.health <= 0) {
+            gainXP(socket.id, enemy.type);
+            dropLoot(enemy.x, enemy.y, enemy.type);
+            return false;
+          }
+        }
+        return true;
+      });
+      io.to(socket.id).emit('playerStatsUpdated', { mana: player.mana });
+      socket.broadcast.emit('playerSpecial', { id: socket.id, type: 'blast', x: player.x, y: player.y });
+    }
+  });
+
+  socket.on('chatMessage', (msg) => {
+
+    if (!gameState.players[socket.id]) return;
+    const player = gameState.players[socket.id];
+    
+    io.emit('chatMessage', {
+      id: socket.id,
+      name: player.name,
+      message: msg.substring(0, 100) // Limit length
+    });
+  });
+
 
   socket.on('disconnect', () => {
     if (gameState.players[socket.id]) {
@@ -295,13 +355,18 @@ setInterval(() => {
     return p.life > 0;
   });
 
+  // Update game time
+  gameState.gameTime = (gameState.gameTime + 1) % 2400;
+
   // Broadcast world state
   io.emit('worldState', {
     enemies: gameState.enemies,
     items: gameState.items,
     chests: gameState.chests,
-    particles: gameState.particles
+    particles: gameState.particles,
+    gameTime: gameState.gameTime
   });
+
 
   // Check player deaths
   Object.entries(gameState.players).forEach(([id, player]) => {
@@ -313,15 +378,20 @@ setInterval(() => {
     }
   });
 
-}, 30);
+}, 16);
+
 
 // Helper functions
 function spawnEnemy() {
   const types = Object.keys(ENEMY_TYPES);
   const randomType = types[Math.floor(Math.random() * types.length)];
-  const isBoss = Math.random() < 0.02;
+  const isBoss = Math.random() < 0.02 || (gameState.gameTime === 1200 && gameState.enemies.length < 40);
   const type = isBoss ? 'boss_dragon' : randomType;
   const typeData = ENEMY_TYPES[type];
+
+  if (isBoss) {
+    io.emit('bossSpawned', { name: typeData.name, x: 0, y: 0 }); // Pos handled below
+  }
 
   const enemy = {
     id: gameState.nextEnemyId++,
